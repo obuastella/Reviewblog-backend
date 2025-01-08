@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 require("./prod")(app);
 //health check
-app.get("/api/", (req: Request, res: Response) => {
+app.get("/", (req: Request, res: Response) => {
   res.status(200).send("ReviewBlog Backend!");
 });
 
