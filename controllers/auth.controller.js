@@ -12,7 +12,7 @@ export const signup = async (req, res) => {
       res.status(400).json({ success: false, message: "User already exists" });
     }
 
-    const hashPassword = await bcryptjs.hash(password, 10);
+    const hashPassword = await bcryptjs.hash(password, 8);
     const verificationToken = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
