@@ -1,7 +1,7 @@
 import { User } from "../models/user.models.js";
 import bcryptjs from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { sendVerificationEmail } from "../mailtrap/email.js";
+import { sendVerificationEmail, sendWelcomeEmail } from "../mailtrap/email.js";
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
       password: hashPassword,
       fullName,
       verificationToken,
-      verficationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // expires in 24hours
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000, // expires in 24hours
     });
     await user.save();
     //authenticate jwt
@@ -41,10 +41,45 @@ export const signup = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+export const verifyEmail = async (req, res) => {
+  const { code } = req.body;
+  try {
+    const user = await User.findOne({
+      verificationToken: code,
+      verificationTokenExpiresAt: { $gt: Date.now() }, // this checks if the token is expired
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid or expired verification code",
+      });
+    }
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiresAt = undefined;
+    await user.save();
+    await sendWelcomeEmail(user.email, user.fullName);
+    res.status(200).json({
+      success: true,
+      message: "User email verified successfully.",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.error("An error occured while verifying the email", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 export const login = async (req, res) => {
-  res.send("Signup route");
+  res.send("Login route");
 };
 export const logout = async (req, res) => {
-  res.send("Signup route");
+  res.send("Logout route");
 };
