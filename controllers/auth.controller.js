@@ -78,7 +78,8 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  res.send("Login route");
+  try {
+  } catch (error) {}
 };
 export const logout = async (req, res) => {
   res.clearCookie("token");
