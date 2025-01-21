@@ -78,8 +78,35 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  const { email, password } = req.body;
   try {
-  } catch (error) {}
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Password is invalid" });
+    }
+    generateTokenAndSetCookie(res, user.id);
+    user.lastLogin = new Date();
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: "User saved successfully Logged in",
+      user: {
+        ...user._doc,
+        password: undefined,
+      },
+    });
+  } catch (error) {
+    console.log("Error in Login", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 export const logout = async (req, res) => {
   res.clearCookie("token");
