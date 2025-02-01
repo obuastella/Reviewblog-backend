@@ -16,7 +16,9 @@ export const signup = async (req, res) => {
     }
     const userAlreadyExists = await User.findOne({ email });
     if (userAlreadyExists) {
-      res.status(400).json({ success: false, message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
     }
 
     const hashPassword = await bcryptjs.hash(password, 8);
@@ -35,7 +37,7 @@ export const signup = async (req, res) => {
     generateTokenAndSetCookie(res, user._id);
 
     sendVerificationEmail(user.email, verificationToken);
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "User created successfully",
       user: {
